@@ -104,10 +104,11 @@ class RelevanceEvaluator:
     def evaluate_iter(self, run: RunType) -> Iterable[Dict[str, Union[float, str]]]:
         for qid, scoredocs in _coerce_run_iter(run):
             _py_ndeval.set_global_alpha_beta(self.alpha, self.beta)
-            metrics = _py_ndeval.eval(self.qrels[qid], scoredocs, self.measures_arg)
-            result = {'query_id': qid}
-            result.update(zip(self.measures, metrics))
-            yield result
+            if qid in self.qrels:
+                metrics = _py_ndeval.eval(self.qrels[qid], scoredocs, self.measures_arg)
+                result = {'query_id': qid}
+                result.update(zip(self.measures, metrics))
+                yield result
 
 
 def ndeval_iter(qrels: QrelsType, run: RunType, measures: MeasuresType = None, alpha: float = 0.5, beta: float = 0.5) -> Iterable[Dict[str, Union[float, str]]]:
@@ -141,7 +142,7 @@ def _coerce_qrels(qrels: QrelsType, max_cutoff, alpha, beta):
                 # {qid: [(subtopic, docno, rel)]}
                 subtopic_map = {}
                 for subtopic in subtopics:
-                    subqrels += [(subtopic_map.set_default(sid, len(subtopic_map)), docid, 1 if rel > 0 else 0) for sid, docid, rel in subtopic]
+                    subqrels += [(subtopic_map.setdefault(sid, len(subtopic_map)), docid, 1 if rel > 0 else 0) for sid, docid, rel in subtopic]
             else:
                 raise RuntimeError('unsupported qrels format')
             _py_ndeval.set_global_alpha_beta(alpha, beta)
@@ -163,10 +164,14 @@ def _coerce_qrels(qrels: QrelsType, max_cutoff, alpha, beta):
             if query_id not in result:
                 result[query_id] = []
             result[query_id].append((
-                subtopic_map.set_default(subtopic_id, len(subtopic_map)),
+                subtopic_map.setdefault(subtopic_id, len(subtopic_map)),
                 doc_id,
                 1 if relevance > 0 else 0
             ))
+        for qid in result:
+            _py_ndeval.set_global_alpha_beta(alpha, beta)
+            result[qid] = _py_ndeval.Qrels(result[qid], max_cutoff)
+        return result
     else:
         # TODO: support pd.DataFrame, others?
         raise RuntimeError('unsupported qrels format')
@@ -197,7 +202,7 @@ def _coerce_run_iter(run):
         for rec in run:
             if hasattr(rec, '_fields') and _type_valid(rec, type_map, ScoredDoc):
                 query_id, doc_id, score = rec.query_id, rec.doc_id, rec.score
-            elif isinstance(subtopic, tuple):
+            elif isinstance(rec, tuple):
                 query_id, doc_id, score = rec
             else:
                 raise RuntimeError('unsupported run format')

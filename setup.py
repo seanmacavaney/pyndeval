@@ -22,5 +22,5 @@ setuptools.setup(
         'License :: OSI Approved :: MIT License',
     ],
     python_requires='>=3.6',
-    ext_modules=[setuptools.Extension("_py_ndeval", ["src/py_ndeval.c"])],
+    ext_modules=[setuptools.Extension("_py_ndeval", ["src/py_ndeval.c"], extra_compile_args=['-std=c99'])],
 )
