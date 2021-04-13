@@ -109,7 +109,7 @@ static PyTypeObject QrelsType = {
 */
 
 // Adapted from the version in ndeval.c that reads from a file
-struct rList *pyProcessRun (PyObject *data, int *topics, char **runid)
+struct rList *pyProcessRun (PyObject *data, int *topics, char **runid, struct result **rref)
 {
   Py_ssize_t len = PyList_Size(data);
   int n = (int)len;
@@ -128,7 +128,8 @@ struct rList *pyProcessRun (PyObject *data, int *topics, char **runid)
   struct rList *rl = (struct rList *) localMalloc ((*topics)*sizeof (struct rList));
   resultSortByDocno (r, n);
   populateResultList (r, n, rl, *topics);
-  free(r);
+  
+  rref = &r; // allows this memory to be freed later
 
   return rl;
 }
@@ -157,8 +158,9 @@ static PyObject *eval(PyObject *self, PyObject *args) {
 
   int rTopics = 1;
   char* runid = "";
+  struct result *rref = NULL;
 
-  struct rList* rrl = pyProcessRun(run, &rTopics, &runid);
+  struct rList* rrl = pyProcessRun(run, &rTopics, &runid, &rref);
   applyQrels(qrels->qrels, rTopics, rrl, rTopics);
 
   Py_ssize_t len = PyList_Size(measures);
@@ -193,6 +195,7 @@ static PyObject *eval(PyObject *self, PyObject *args) {
   }
 
   free(rrl);
+  free(rref);
 
   return result;
 }
