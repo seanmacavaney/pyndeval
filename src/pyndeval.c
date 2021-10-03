@@ -11,12 +11,13 @@
 
 
 // Adapted from the version in ndeval.c that reads from a file
-struct rList *pyProcessQrels(PyObject *data, int cutoff)
+struct rList *pyProcessQrels(PyObject *data, int cutoff, long *has_multiple_subtopics)
 {
   Py_ssize_t len = PyList_Size(data);
   int n = (int)len;
   struct qrel *q = localMalloc(n*sizeof(struct qrel));
   int i = 0;
+  has_multiple_subtopics[0] = 0;
 
   for (Py_ssize_t i=0; i<len; i++) {
     PyObject *item = PyList_GetItem(data, i);
@@ -24,6 +25,9 @@ struct rList *pyProcessQrels(PyObject *data, int cutoff)
     q[i].subtopic = (int)PyLong_AsLong(PyTuple_GetItem(item, 0));
     q[i].docno = PyUnicode_AsUTF8(PyTuple_GetItem(item, 1));
     q[i].judgment = (int)PyLong_AsLong(PyTuple_GetItem(item, 2));
+    if (i > 0 && has_multiple_subtopics[0] == 0 && q[i].subtopic != q[0].subtopic) {
+      has_multiple_subtopics[0] = 1;
+    }
   }
 
   int count[1];
@@ -41,6 +45,7 @@ typedef struct {
     struct rList* qrels;
     int n;
     int cutoff;
+    long has_multiple_subtopics;
 } QrelsObject;
 
 static void
@@ -73,9 +78,15 @@ Qrels_init(QrelsObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-    self->qrels = pyProcessQrels(qrels, self->cutoff);
+    self->qrels = pyProcessQrels(qrels, self->cutoff, &self->has_multiple_subtopics);
     self->n = (int)PyList_Size(qrels);
     return 0;
+}
+
+static PyObject*
+Qrels_has_multiple_subtopics(QrelsObject *self)
+{
+    return PyBool_FromLong(self->has_multiple_subtopics);
 }
 
 
@@ -85,13 +96,14 @@ static PyMemberDef Qrels_members[] = {
 
 
 static PyMethodDef Qrels_methods[] = {
+    {"has_multiple_subtopics", Qrels_has_multiple_subtopics, METH_NOARGS, "does this query have multiple graded subtopics?"},
     {NULL}  /* Sentinel */
 };
 
 
 static PyTypeObject QrelsType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "_py_ndeval.Qrels",
+    .tp_name = "_pyndeval.Qrels",
     .tp_doc = "ndeval qrels",
     .tp_basicsize = sizeof(QrelsObject),
     .tp_itemsize = 0,
@@ -226,14 +238,14 @@ static PyMethodDef PyNdevalMethods[] = {
 
 static struct PyModuleDef pyndevalmodule = {
     PyModuleDef_HEAD_INIT,
-    "_py_ndeval",
+    "_pyndeval",
     "Python interface for ndeval",
     -1,
     PyNdevalMethods
 };
 
 
-PyMODINIT_FUNC PyInit__py_ndeval(void) {
+PyMODINIT_FUNC PyInit__pyndeval(void) {
   PyObject *m;
   if (PyType_Ready(&QrelsType) < 0)
     return NULL;
