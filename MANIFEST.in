@@ -1,0 +1,2 @@
+include src/ndeval.c
+include src/pyndeval.c
