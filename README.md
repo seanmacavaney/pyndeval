@@ -12,6 +12,7 @@ python setup.py install
 
 ```python
 import pyndeval
+from pyndeval import SubtopicQrel, ScoredDoc
 
 # provide qrels as a list of tuples
 qrels = [
