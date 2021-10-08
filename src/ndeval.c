@@ -1,3 +1,7 @@
+#ifdef _WIN32
+#define alloca _alloca
+#endif
+
 /* only evaluate e (which could cause out-of-bound reference) when z is false */
 #define TopicVal(z,e) (z ? 0 : e)
 #define RiskBased(r,b,a) ((r) >= (b) ? (r) - (b) : ((a)+1) * ((r)-(b)))
