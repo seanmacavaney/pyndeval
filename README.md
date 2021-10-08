@@ -4,7 +4,17 @@ A python interface to TREC's `ndeval.c`, used for computing diversity retrieval 
 
 ## Getting Started
 
+From pip:
+
 ```bash
+pip install pyndeval
+```
+
+Or install from source:
+
+```bash
+git clone https://github.com/seanmacavaney/pyndeval.git
+cd pyndeval
 python setup.py install
 ```
 
