@@ -1436,7 +1436,7 @@ main (int argc, char **argv)
       }
     else if (argc >= 2 && strcmp ("-help", argv[1]) == 0)
       {
-  print(helpText);
+//  print(helpText);
   exit (0);
       }
     else if (argc >= 5 && strcmp ("-alpha", argv[1]) == 0)
