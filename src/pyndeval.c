@@ -86,7 +86,8 @@ Qrels_init(QrelsObject *self, PyObject *args, PyObject *kwds)
 static PyObject*
 Qrels_has_multiple_subtopics(QrelsObject *self, PyObject* noargs)
 {
-    return PyBool_FromLong(self->has_multiple_subtopics);
+    QrelsObject* qrels_self = (QrelsObject*)self;
+    return PyBool_FromLong(qrels_self->has_multiple_subtopics);
 }
 
 
