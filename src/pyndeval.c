@@ -75,7 +75,7 @@ Qrels_init(QrelsObject *self, PyObject *args, PyObject *kwds)
         return -1;
 
     if (!PyList_Check(qrels)) {
-        return NULL;
+        return 0;
     }
 
     self->qrels = pyProcessQrels(qrels, self->cutoff, &self->has_multiple_subtopics);
@@ -84,7 +84,7 @@ Qrels_init(QrelsObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject*
-Qrels_has_multiple_subtopics(QrelsObject *self)
+Qrels_has_multiple_subtopics(QrelsObject *self, PyObject* noargs)
 {
     return PyBool_FromLong(self->has_multiple_subtopics);
 }
