@@ -35,7 +35,7 @@ struct rList *pyProcessQrels(PyObject *data, int cutoff, long *has_multiple_subt
 
   qrelSort(q, n);
 
-  struct rList* result = qrelToRList(q, n, &count);
+  struct rList* result = qrelToRList(q, n, count);
   free(q);
   return result;
 }

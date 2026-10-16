@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyndeval",
-    version="0.0.7",
+    version="0.0.8",
     author="Sean MacAvaney",
     author_email="sean.macavaney@glasgow.ac.uk",
     description="Interface to ndeval.c",
